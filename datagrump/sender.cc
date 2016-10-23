@@ -7,6 +7,8 @@
 #include "contest_message.hh"
 #include "controller.hh"
 #include "poller.hh"
+#include "timestamp.hh"
+
 
 using namespace std;
 using namespace PollerShortNames;
@@ -111,7 +113,19 @@ void DatagrumpSender::send_datagram( void )
 
 bool DatagrumpSender::window_is_open( void )
 {
-  return sequence_number_ - next_ack_expected_ < controller_.window_size();
+  bool WindowOpen = (sequence_number_ - next_ack_expected_ < controller_.window_size());
+  bool NoPendingPacket = true;
+  if(controller_.send_time_list != NULL && (controller_.recv_counter < controller_.send_counter))
+    NoPendingPacket = timestamp_ms() - controller_.send_time_list[controller_.recv_counter] < 80000;
+
+  if(controller_.send_time_list != NULL && controller_.send_counter > 2)
+    if(timestamp_ms() - controller_.send_time_list[controller_.send_counter - 1] > 20)
+    {
+      //printf("Send Heart Beat Packet\n");
+      return true; //This is a heart beat packet. 
+    }
+
+  return WindowOpen && NoPendingPacket;
 }
 
 int DatagrumpSender::loop( void )
