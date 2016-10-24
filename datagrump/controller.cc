@@ -14,7 +14,7 @@ using namespace std;
 
 /* Default constructor */
 Controller::Controller( const bool debug )
-  : debug_( debug ), window_size_float(100.0)
+  : debug_( debug ), window_size_float(20.0)
 {
 }
 
@@ -312,38 +312,15 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 
   this->recv_time_list[this->recv_counter] = timestamp_ack_received;
   this->delay_list[this->recv_counter++] = timestamp_ack_received - send_timestamp_acked;
-
-  /* Simple AIMD */
-  /*
-  static uint64_t last_sequence_number_acked = 0;
-
-  if(sequence_number_acked != last_sequence_number_acked + 1)
-  {
-    window_size_float = max(window_size_float / 2, 1.0f); 
-  }
-  else
-  {
-    window_size_float = window_size_float + 1.0 / window_size_float;
-  }
-
-  last_sequence_number_acked = sequence_number_acked;
-
-  printf("HST, %.2f, %lu\n",window_size_float, timestamp_ack_received - send_timestamp_acked);
-  
-  */
  
   ack_received_prediction(sequence_number_acked, send_timestamp_acked, recv_timestamp_acked, timestamp_ack_received);
 
 
   
-  //if((int64_t)timestamp_ack_received - (int64_t)send_timestamp_acked > 80)
-  //window_size_float /= 1.02;
-  //else if(timestamp_ack_received - send_timestamp_acked > 100)
-  //{
-  //window_size_float /= 1.1;
-  //}
+  //if((int64_t)timestamp_ack_received - (int64_t)send_timestamp_acked > 60)
+  //  window_size_float *= 0.97;
   //else
-  //window_size_float +=min(2.0/window_size_float,1.0);
+  //  window_size_float += 2.0/window_size_float;
 
   if ( debug_ ) {
     cerr << "At time " << timestamp_ack_received
@@ -358,5 +335,6 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
    before sending one more datagram */
 unsigned int Controller::timeout_ms( void )
 {
+  //return 50; /* timeout of 0.05 second */
   return 50; /* timeout of 0.05 second */
 }

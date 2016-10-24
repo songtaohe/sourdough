@@ -121,7 +121,6 @@ bool DatagrumpSender::window_is_open( void )
   if(controller_.send_time_list != NULL && controller_.send_counter > 2)
     if(timestamp_ms() - controller_.send_time_list[controller_.send_counter - 1] > 20)
     {
-      //printf("Send Heart Beat Packet\n");
       return true; //This is a heart beat packet. 
     }
 
@@ -163,6 +162,7 @@ int DatagrumpSender::loop( void )
     } else if ( ret.result == PollResult::Timeout ) {
       /* After a timeout, send one datagram to try to get things moving again */
       send_datagram();
+//	controller_.window_size_float = max(0.5*controller_.window_size_float, 1.0);
     }
   }
 }
